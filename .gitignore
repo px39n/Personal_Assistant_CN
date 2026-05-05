@@ -16,7 +16,8 @@ venv/
 # SSH / deploy scripts (local only)
 .deploy.env
 
-# IDE / local agent notes (Cursor workspace agent markdown)
+# IDE / Cursor (local rules & MCP paths — do not publish)
+.cursor/
 .vscode/
 .idea/
 .agent/
