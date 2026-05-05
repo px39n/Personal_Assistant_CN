@@ -1,0 +1,67 @@
+services:
+  database:
+    image: pgvector/pgvector:pg16
+    container_name: assistant_db
+    restart: always
+    environment:
+      POSTGRES_DB: assistant_cn
+      POSTGRES_USER: assistant
+      POSTGRES_PASSWORD: assistant
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assistant -d assistant_cn"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: assistant_redis
+    restart: always
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: assistant_searxng
+    restart: always
+    volumes:
+      - ./config/searxng:/etc/searxng
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8888
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: assistant_app
+    restart: always
+    volumes:
+      - ./app:/code/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      DATABASE_URL: postgresql+asyncpg://assistant:assistant@database:5432/assistant_cn
+      REDIS_URL: redis://redis:6379/0
+      SEARXNG_URL: http://searxng:8080
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      searxng:
+        condition: service_started
+
+volumes:
+  pgdata:
+  redisdata:

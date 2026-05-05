@@ -1,0 +1,64 @@
+# MkDocs — build: mkdocs build | preview: mkdocs serve
+# Install: pip install -e ".[docs]"
+
+site_name: Personal Assistant CN
+site_description: 个人 AI 助手平台 — 文档
+
+# CI 设置 SITE_URL → https://<owner>.github.io/<repo>/ （GitHub Pages）
+site_url: !ENV [SITE_URL, 'http://127.0.0.1:8000/']
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: 浅色模式
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: 深色模式
+
+nav:
+  - 首页: index.md
+  - GitHub Pages: github-pages.md
+  - 快速开始: getting-started.md
+  - 架构概览: architecture.md
+  - 部署与运维: deployment.md
+  - 数据层与行情: data-and-apis.md
+  - 前端与边缘代理: frontend-and-proxy.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.details
+
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+
+extra:
+  generator: false
+
+docs_dir: docs

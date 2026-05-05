@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Router — Personal Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;--bg-raised:#111113;--bg-elevated:#18181b;
+  --surface:#1c1c20;--surface-hi:#242428;
+  --border:rgba(255,255,255,0.07);--border-hi:rgba(255,255,255,0.13);
+  --shine:rgba(255,255,255,0.04);
+  --text:#ececec;--text-2:#8b8b92;--text-3:#53535a;
+  --accent:#7c5cfc;--accent-hi:#9b85fc;--accent-glow:rgba(124,92,252,0.18);
+  --green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;
+  --r:10px;--r2:14px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Inter',ui-sans-serif,system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+header{
+  height:52px;padding:0 16px;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,#141416,#111113);
+  border-bottom:1px solid var(--border);
+  box-shadow:inset 0 1px 0 var(--shine),0 1px 3px rgba(0,0,0,0.4);
+  position:sticky;top:0;z-index:100;
+}
+.logo{
+  width:26px;height:26px;border-radius:7px;
+  background:linear-gradient(135deg,#7c5cfc,#5b3fd9);
+  box-shadow:0 0 8px rgba(124,92,252,0.3),inset 0 1px 0 rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;
+}
+header h1{font-size:13px;font-weight:600;letter-spacing:-0.01em}
+.spacer{flex:1}
+.nav-link{
+  display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:7px;
+  background:var(--bg-raised);border:1px solid var(--border);
+  box-shadow:inset 0 1px 0 var(--shine);
+  color:var(--text-2);font-size:12px;font-weight:500;text-decoration:none;transition:all .15s;
+}
+.nav-link:hover{background:var(--surface);border-color:var(--border-hi);color:var(--text)}
+.nav-link.active{background:var(--accent-glow);border-color:rgba(124,92,252,0.3);color:var(--accent-hi)}
+.nav-dot{width:5px;height:5px;border-radius:50%;box-shadow:0 0 5px rgba(52,211,153,0.5)}
+
+.container{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+
+.section{
+  background:linear-gradient(180deg,var(--bg-elevated),var(--bg-raised));
+  border:1px solid var(--border);border-radius:var(--r2);
+  box-shadow:inset 0 1px 0 var(--shine),0 2px 8px rgba(0,0,0,0.3);
+  margin-bottom:20px;overflow:hidden;
+}
+.section-head{
+  padding:14px 18px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.section-head h2{font-size:14px;font-weight:600}
+.section-head .badge{
+  padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;
+  background:var(--accent-glow);color:var(--accent-hi);border:1px solid rgba(124,92,252,0.2);
+}
+.section-body{padding:16px 18px}
+
+.prompt-box{
+  background:#0d0d0f;border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  line-height:1.7;color:var(--text-2);white-space:pre-wrap;word-break:break-word;
+  max-height:300px;overflow-y:auto;
+}
+.prompt-box::-webkit-scrollbar{width:4px}
+.prompt-box::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
+
+.rule-row{
+  display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.rule-row:last-child{border-bottom:none}
+.rule-trigger{
+  flex:1;font-size:13px;color:var(--text-2);
+}
+.rule-arrow{color:var(--text-3);font-size:12px}
+.rule-target{
+  padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;
+  background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.15);
+  font-family:'JetBrains Mono',monospace;
+}
+
+.tool-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:10px;transition:border-color .15s;
+}
+.tool-card:hover{border-color:var(--border-hi)}
+.tool-card:last-child{margin-bottom:0}
+.tool-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tool-icon{font-size:18px}
+.tool-name{font-size:14px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--text)}
+.tool-cat{
+  padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.04em;
+}
+.tool-desc{font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:10px}
+.params-table{width:100%;border-collapse:collapse}
+.params-table th{
+  text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;
+  letter-spacing:0.05em;color:var(--text-3);padding:4px 8px;
+  border-bottom:1px solid var(--border);
+}
+.params-table td{
+  font-size:12px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03);
+  color:var(--text-2);
+}
+.params-table tr:last-child td{border-bottom:none}
+.param-name{font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:500}
+.param-type{font-family:'JetBrains Mono',monospace;color:var(--yellow);font-size:11px}
+.param-req{color:var(--red);font-size:10px;font-weight:600}
+.param-opt{color:var(--text-3);font-size:10px}
+.param-enum{
+  display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;
+  background:rgba(96,165,250,0.1);color:var(--blue);border:1px solid rgba(96,165,250,0.15);
+  margin:1px 2px;font-family:'JetBrains Mono',monospace;
+}
+
+.flow-diagram{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  padding:16px 0;flex-wrap:wrap;
+}
+.flow-node{
+  padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  text-align:center;min-width:80px;
+}
+.flow-arrow{
+  color:var(--text-3);font-size:16px;padding:0 6px;
+}
+.flow-user{background:rgba(124,92,252,0.15);color:var(--accent-hi);border:1px solid rgba(124,92,252,0.25)}
+.flow-router{background:rgba(251,191,36,0.12);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)}
+.flow-llm{background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.2)}
+.flow-skill{background:rgba(52,211,153,0.12);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
+.flow-output{background:rgba(236,72,153,0.12);color:#f472b6;border:1px solid rgba(236,72,153,0.2)}
+
+.loading{text-align:center;padding:40px;color:var(--text-3);font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">A</div>
+  <h1>Personal Assistant</h1>
+  <div class="spacer"></div>
+  <a href="/static/index.html" class="nav-link">Chat</a>
+  <a href="/static/skills.html" class="nav-link">Skills</a>
+  <a href="/static/dashboards/dashboard.html" class="nav-link"><span class="nav-dot" style="background:#ef5350"></span>Dashboard</a>
+  <a href="/static/router.html" class="nav-link active"><span class="nav-dot" style="background:var(--yellow)"></span>Router</a>
+  <a href="/static/companion.html" class="nav-link"><span class="nav-dot" style="background:#f472b6"></span>伴侣</a>
+</header>
+
+<div class="container" id="app">
+  <div class="loading">加载中...</div>
+</div>
+
+<script>
+async function init() {
+  const app = document.getElementById('app');
+  try {
+    const res = await fetch('/api/skills/router/info');
+    const data = await res.json();
+    render(data);
+  } catch (e) {
+    app.innerHTML = `<div class="loading" style="color:var(--red)">加载失败: ${e.message}</div>`;
+  }
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+function render(data) {
+  const app = document.getElementById('app');
+  let html = '';
+
+  // 1. Flow diagram
+  html += `<div class="section">
+    <div class="section-head"><h2>调用链路</h2></div>
+    <div class="section-body">
+      <div class="flow-diagram">
+        <div class="flow-node flow-user">用户消息</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node flow-router">Router</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node flow-llm">LLM 判断</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node flow-skill">Skill 执行</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node flow-output">回复用户</div>
+      </div>
+    </div>
+  </div>`;
+
+  // 2. Routing rules
+  html += `<div class="section">
+    <div class="section-head">
+      <h2>路由规则</h2>
+      <span class="badge">${data.routing_rules.length} 条硬规则</span>
+    </div>
+    <div class="section-body">`;
+  if (data.routing_rules.length) {
+    for (const r of data.routing_rules) {
+      html += `<div class="rule-row">
+        <span class="rule-trigger">${esc(r.trigger)}</span>
+        <span class="rule-arrow">→</span>
+        <span class="rule-target">${esc(r.target)}</span>
+      </div>`;
+    }
+  } else {
+    html += `<div style="color:var(--text-3);font-size:13px">暂无硬编码规则</div>`;
+  }
+  html += `</div></div>`;
+
+  // 3. System prompt
+  html += `<div class="section">
+    <div class="section-head"><h2>System Prompt</h2></div>
+    <div class="section-body">
+      <div class="prompt-box">${esc(data.system_prompt)}</div>
+    </div>
+  </div>`;
+
+  // 4. Tool definitions
+  html += `<div class="section">
+    <div class="section-head">
+      <h2>Skill API 接口</h2>
+      <span class="badge">${data.tool_count} 个工具</span>
+    </div>
+    <div class="section-body">`;
+
+  for (const t of data.tools) {
+    html += `<div class="tool-card">
+      <div class="tool-header">
+        <span class="tool-icon">${t.icon}</span>
+        <span class="tool-name">${esc(t.name)}</span>
+        <span class="tool-cat" style="background:${t.category_color}22;color:${t.category_color};border:1px solid ${t.category_color}33">${esc(t.category_label)}</span>
+      </div>
+      <div class="tool-desc">${esc(t.description)}</div>`;
+
+    if (t.parameters.length) {
+      html += `<table class="params-table">
+        <thead><tr><th>参数</th><th>类型</th><th>说明</th><th></th></tr></thead><tbody>`;
+      for (const p of t.parameters) {
+        let extra = '';
+        if (p.enum) extra = p.enum.map(e => `<span class="param-enum">${esc(e)}</span>`).join('');
+        if (p.default !== undefined && p.default !== null) extra += ` <span style="color:var(--text-3);font-size:10px">默认: ${esc(p.default)}</span>`;
+        html += `<tr>
+          <td><span class="param-name">${esc(p.name)}</span></td>
+          <td><span class="param-type">${esc(p.type)}</span></td>
+          <td>${esc(p.description)} ${extra}</td>
+          <td>${p.required ? '<span class="param-req">必填</span>' : '<span class="param-opt">可选</span>'}</td>
+        </tr>`;
+      }
+      html += `</tbody></table>`;
+    } else {
+      html += `<div style="color:var(--text-3);font-size:11px">无参数</div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `</div></div>`;
+  app.innerHTML = html;
+}
+
+init();
+</script>
+</body>
+</html>

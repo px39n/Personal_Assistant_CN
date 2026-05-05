@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills — Personal Assistant CN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:          #0a0a0a;
+            --bg-raised:   #111113;
+            --bg-elevated: #18181b;
+            --surface:     #1c1c20;
+            --surface-hi:  #242428;
+            --border:      rgba(255,255,255,0.07);
+            --border-hi:   rgba(255,255,255,0.13);
+            --shine:       rgba(255,255,255,0.04);
+            --text:        #ececec;
+            --text-2:      #8b8b92;
+            --text-3:      #53535a;
+            --accent:      #7c5cfc;
+            --accent-hi:   #9b85fc;
+            --accent-glow: rgba(124,92,252,0.18);
+            --green:       #34d399;
+            --red:         #f87171;
+            --r:  10px;
+            --r2: 14px;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height:100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        body::after {
+            content:''; position:fixed; inset:0; z-index:9999; pointer-events:none;
+            opacity:0.022;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+
+        /* ── Header ── */
+        header {
+            height:52px; padding:0 24px;
+            display:flex; align-items:center; gap:14px;
+            background: linear-gradient(180deg, #141416 0%, #111113 100%);
+            border-bottom:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine), 0 1px 3px rgba(0,0,0,0.4);
+            position:sticky; top:0; z-index:100;
+        }
+        .back {
+            color:var(--text-3); text-decoration:none;
+            font-size:12px; font-weight:500;
+            display:flex; align-items:center; gap:4px;
+            padding:5px 10px; border-radius:7px;
+            transition:all 0.12s;
+        }
+        .back:hover { color:var(--text-2); background:var(--surface); }
+        .back svg { width:13px; height:13px; }
+        header h1 { font-size:13px; font-weight:600; letter-spacing:-0.01em; }
+        .spacer { flex:1; }
+        .badge {
+            font-size:11px; font-weight:500; color:var(--text-3);
+            padding:4px 10px; border-radius:7px;
+            background:var(--bg-raised); border:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine);
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            max-width:1120px; margin:0 auto;
+            padding:18px 24px 0; display:flex; gap:6px;
+            align-items:center; flex-wrap:wrap;
+        }
+        .chip {
+            padding:5px 13px; border-radius:7px; font-size:12px; font-weight:500;
+            background:var(--bg-raised); border:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine);
+            color:var(--text-3); cursor:pointer; transition:all 0.12s;
+        }
+        .chip:hover { color:var(--text-2); border-color:var(--border-hi); }
+        .chip.on {
+            background: linear-gradient(180deg, rgba(124,92,252,0.15) 0%, rgba(124,92,252,0.08) 100%);
+            border-color:rgba(124,92,252,0.3); color:var(--accent-hi);
+            box-shadow: inset 0 1px 0 rgba(124,92,252,0.12);
+        }
+        .search-w { margin-left:auto; position:relative; }
+        .search-w svg {
+            position:absolute; left:10px; top:50%; transform:translateY(-50%);
+            width:13px; height:13px; color:var(--text-3); pointer-events:none;
+        }
+        .search-i {
+            background:var(--bg-raised); border:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine);
+            border-radius:7px; padding:6px 10px 6px 30px; color:var(--text);
+            font-size:12px; font-family:inherit; outline:none; width:180px;
+            transition:border-color 0.15s, box-shadow 0.15s;
+        }
+        .search-i:focus {
+            border-color:rgba(124,92,252,0.4);
+            box-shadow: inset 0 1px 0 var(--shine), 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── Grid ── */
+        .grid {
+            max-width:1120px; margin:0 auto;
+            display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr));
+            gap:12px; padding:18px 24px 48px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-raised) 100%);
+            border:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine), 0 2px 6px rgba(0,0,0,0.25);
+            border-radius: var(--r2); overflow:hidden;
+            transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+        }
+        .card:hover {
+            border-color:var(--border-hi);
+            box-shadow: inset 0 1px 0 var(--shine), 0 4px 20px rgba(0,0,0,0.35);
+            transform:translateY(-1px);
+        }
+        .card.off .card-main { opacity:0.35; }
+
+        .card-main { padding:18px; cursor:pointer; }
+        .card-top { display:flex; gap:14px; }
+        .card-icon {
+            width:42px; height:42px; border-radius:10px;
+            background: linear-gradient(180deg, var(--surface-hi) 0%, var(--surface) 100%);
+            border:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine);
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; flex-shrink:0;
+        }
+        .card-meta { flex:1; min-width:0; }
+        .card-name-row { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+        .help-btn {
+            width:20px; height:20px; border-radius:50%; border:1px solid var(--border);
+            background:var(--surface); color:var(--text-3); font-size:11px; font-weight:600;
+            display:flex; align-items:center; justify-content:center;
+            cursor:help; flex-shrink:0; position:relative; transition:all 0.12s;
+            margin-left:auto;
+        }
+        .help-btn:hover { color:var(--accent-hi); border-color:rgba(124,92,252,0.3); background:rgba(124,92,252,0.08); }
+        .help-tip {
+            display:none; position:absolute; top:28px; right:0; z-index:200;
+            width:280px; padding:12px; border-radius:8px;
+            background:var(--bg-elevated); border:1px solid var(--border-hi);
+            box-shadow:0 8px 32px rgba(0,0,0,0.5);
+            font-size:11px; line-height:1.6; color:var(--text-2);
+            font-weight:400; text-align:left; white-space:normal;
+            pointer-events:none;
+        }
+        .help-btn:hover .help-tip { display:block; }
+
+        .dash-tag {
+            cursor:pointer; background:rgba(124,92,252,0.12) !important;
+            color:var(--accent-hi) !important; border:1px solid rgba(124,92,252,0.25) !important;
+            transition:all 0.12s;
+        }
+        .dash-tag:hover { background:rgba(124,92,252,0.22) !important; }
+        .card-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .card-cat {
+            font-size:10px; font-weight:600; text-transform:uppercase;
+            letter-spacing:0.05em; padding:2px 6px; border-radius:4px; flex-shrink:0;
+        }
+        .card-desc {
+            font-size:12px; color:var(--text-3); line-height:1.5; margin-top:5px;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+        }
+        .card-foot {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-top:14px;
+        }
+        .card-tags { display:flex; gap:6px; align-items:center; }
+        .card-tag {
+            font-size:10px; padding:2px 7px; border-radius:4px;
+            background:var(--surface); color:var(--text-3);
+            border:1px solid var(--border);
+        }
+
+        /* ── Toggle ── */
+        .tog { position:relative; width:34px; height:18px; flex-shrink:0; cursor:pointer; }
+        .tog input { opacity:0; width:0; height:0; position:absolute; }
+        .tog-t {
+            position:absolute; inset:0; border-radius:18px;
+            background: #2a2a2e;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+            transition: background 0.2s;
+        }
+        .tog-t::after {
+            content:''; position:absolute;
+            width:12px; height:12px; border-radius:50%;
+            left:3px; top:3px;
+            background:linear-gradient(180deg, #eee 0%, #ccc 100%);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            transition:transform 0.2s;
+        }
+        .tog input:checked + .tog-t {
+            background: linear-gradient(135deg, #7c5cfc 0%, #6246d9 100%);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2), 0 0 8px rgba(124,92,252,0.25);
+        }
+        .tog input:checked + .tog-t::after { transform:translateX(16px); }
+
+        /* ── Config Panel ── */
+        .cfg-panel { max-height:0; overflow:hidden; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1); }
+        .cfg-panel.open { max-height:1200px; }
+        .cfg-inner { padding:0 18px 18px; border-top:1px solid var(--border); padding-top:14px; }
+        .cfg-title {
+            font-size:10px; font-weight:600; text-transform:uppercase;
+            letter-spacing:0.06em; color:var(--text-3); margin-bottom:12px;
+        }
+        .cfg-row { margin-bottom:10px; }
+        .cfg-lbl { font-size:12px; font-weight:500; color:var(--text-2); margin-bottom:3px; display:block; }
+        .cfg-hint { font-size:11px; color:var(--text-3); margin-top:2px; }
+        .cfg-row input, .cfg-row select {
+            width:100%; background:var(--bg);
+            border:1px solid var(--border); border-radius:7px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+            padding:7px 10px; color:var(--text); font-size:12px;
+            font-family:inherit; outline:none;
+            transition:border-color 0.15s, box-shadow 0.15s;
+        }
+        .cfg-row input:focus, .cfg-row select:focus {
+            border-color:rgba(124,92,252,0.4);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 0 0 3px var(--accent-glow);
+        }
+        .cfg-acts { display:flex; gap:8px; margin-top:14px; }
+        .btn {
+            padding:6px 14px; border-radius:7px; font-size:12px;
+            font-weight:500; font-family:inherit; cursor:pointer; border:none;
+            transition:all 0.12s;
+        }
+        .btn-p {
+            background: linear-gradient(135deg, #7c5cfc 0%, #6246d9 100%);
+            box-shadow: 0 1px 4px rgba(124,92,252,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+            color:#fff;
+        }
+        .btn-p:hover { box-shadow: 0 2px 10px rgba(124,92,252,0.4), inset 0 1px 0 rgba(255,255,255,0.12); }
+        .btn-g {
+            background:var(--bg-raised); border:1px solid var(--border);
+            box-shadow: inset 0 1px 0 var(--shine); color:var(--text-3);
+        }
+        .btn-g:hover { color:var(--text-2); border-color:var(--border-hi); }
+        .cfg-meta { margin-top:12px; padding-top:10px; border-top:1px solid var(--border); font-size:10px; color:var(--text-3); }
+        .no-cfg { color:var(--text-3); font-size:12px; text-align:center; padding:6px 0; }
+        .no-cfg small { display:block; margin-top:3px; color:#3f3f46; font-size:10px; }
+
+        /* ── User Data (watchlist) ── */
+        .udata { margin-top:12px; padding-top:10px; border-top:1px solid var(--border); }
+        .udata-title {
+            font-size:10px; font-weight:600; text-transform:uppercase;
+            letter-spacing:0.06em; color:var(--text-3); margin-bottom:8px;
+        }
+        .udata-empty { font-size:12px; color:var(--text-3); text-align:center; padding:6px 0; }
+        .wl-item {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:6px 10px; border-radius:7px; margin-bottom:4px;
+            background:var(--bg); border:1px solid var(--border);
+            font-size:12px;
+        }
+        .wl-item .wl-name { font-weight:500; color:var(--text); }
+        .wl-item .wl-code { color:var(--text-3); font-size:11px; margin-left:6px; }
+        .wl-freq {
+            font-size:11px; color:var(--accent-hi);
+            padding:3px 8px; border-radius:5px;
+            background: rgba(124,92,252,0.1); border:1px solid rgba(124,92,252,0.2);
+        }
+        .wl-rm {
+            width:22px; height:22px; border-radius:5px; border:1px solid var(--border);
+            background:transparent; color:var(--text-3); cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            font-size:13px; line-height:1; transition:all 0.12s;
+        }
+        .wl-rm:hover { color:var(--red); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.08); }
+        .freq-bar { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
+        .freq-btn {
+            padding:5px 11px; border-radius:6px; font-size:11px; font-weight:500;
+            background:var(--bg); border:1px solid var(--border);
+            color:var(--text-3); cursor:pointer; transition:all 0.12s;
+        }
+        .freq-btn:hover { color:var(--text-2); border-color:var(--border-hi); }
+        .freq-btn.on {
+            background: linear-gradient(180deg, rgba(124,92,252,0.15) 0%, rgba(124,92,252,0.08) 100%);
+            border-color:rgba(124,92,252,0.3); color:var(--accent-hi);
+        }
+        .target-select {
+            width:100%; padding:6px 10px; border-radius:7px; font-size:12px;
+            background:var(--bg); border:1px solid var(--border);
+            color:var(--text); cursor:pointer; appearance:auto;
+        }
+        .target-select:focus { outline:none; border-color:rgba(124,92,252,0.4); }
+
+        /* ── Push Status ── */
+        .push-panel { margin-top:16px; padding:12px; border-radius:8px; background:var(--bg); border:1px solid var(--border); }
+        .push-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+        .push-header-left { font-size:12px; color:var(--text-2); font-weight:500; }
+        .push-next { font-size:11px; color:var(--accent-hi); font-weight:500; }
+        .push-now-btn {
+            padding:5px 14px; border-radius:6px; font-size:11px; font-weight:600;
+            background:linear-gradient(180deg, rgba(124,92,252,0.25) 0%, rgba(124,92,252,0.12) 100%);
+            border:1px solid rgba(124,92,252,0.35); color:var(--accent-hi);
+            cursor:pointer; transition:all 0.15s;
+        }
+        .push-now-btn:hover { background:linear-gradient(180deg, rgba(124,92,252,0.35) 0%, rgba(124,92,252,0.2) 100%); }
+        .push-now-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .push-timeline { display:flex; align-items:center; gap:0; flex-wrap:wrap; margin-top:6px; }
+        .tl-node {
+            display:flex; flex-direction:column; align-items:center; position:relative;
+            min-width:52px; padding:2px 0;
+        }
+        .tl-dot {
+            width:8px; height:8px; border-radius:50%; border:2px solid var(--border);
+            background:var(--bg-raised); transition:all 0.15s;
+        }
+        .tl-dot.done { background:var(--accent-hi); border-color:var(--accent-hi); }
+        .tl-dot.next { background:var(--bg-raised); border-color:var(--accent-hi); box-shadow:0 0 6px rgba(124,92,252,0.4); }
+        .tl-time { font-size:9px; color:var(--text-3); margin-top:3px; }
+        .tl-line { flex:1; height:2px; background:var(--border); min-width:8px; margin-top:-12px; }
+        .tl-line.done { background:var(--accent-hi); }
+        .push-meta { font-size:10px; color:var(--text-3); margin-top:8px; }
+
+        /* ── Toast ── */
+        .toast {
+            position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(60px);
+            background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-raised) 100%);
+            border:1px solid var(--border-hi);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 var(--shine);
+            border-radius:9px; padding:8px 18px;
+            font-size:12px; color:var(--text-2); z-index:999;
+            opacity:0; transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+            pointer-events:none;
+        }
+        .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+        .empty { text-align:center; padding:60px 20px; color:var(--text-3); font-size:13px; }
+        .empty-i { font-size:28px; margin-bottom:8px; opacity:0.4; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Chat
+        </a>
+        <h1>Skills</h1>
+        <div class="spacer"></div>
+        <span class="badge" id="cnt">—</span>
+    </header>
+
+    <div class="toolbar" id="tb"></div>
+    <div class="grid" id="grid"></div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const SKILL_HELP = {
+            stock_alert: '三层指标监控持仓股票主力资金异动（AKShare）。\n\n⏱ 盘中层（默认30分钟）：\n• 主力净流入/流出占比超阈值 → 即时预警\n\n📅 日频层：\n• 连续3+日同向资金流 + 加速 → 趋势预警\n• 资金流方向反转（连续流出转流入或反之）→ 反转预警\n\n📆 周频层：\n• 近5日累计资金流 + 方向一致性 → 升级预警等级\n\n回测：模拟过去7天三层指标，给出统计和最显著案例的图表分析。',
+            portfolio: '管理关注股票列表，支持添加/移除/查看。\n\n定时推送（APScheduler）：\n• 开盘 9:25 推送快报\n• 盘中按设定频率推送（含 LLM 播报）\n• 通过飞书卡片发送到个人或群聊',
+            stock_chart: '输入股票代码或名称，生成 K 线图（日/周/月）。\n\n数据：Tushare daily API\n图表：mplfinance + 5/10/20 日均线',
+            stock_suspend: '查询 A 股最近停牌和复牌的股票列表。\n\n数据：Tushare suspend_d API',
+            weather: '查询城市实时天气（wttr.in）。\n\n会自动记住上次查询的城市作为默认。',
+            web_search: '通过 SearXNG 搜索引擎获取互联网实时信息。',
+            web_reader: '抓取指定 URL 的网页内容，提取正文返回。',
+            knowledge_search: '在已上传的知识库文档中进行语义搜索。\n\n基于 pgvector 向量数据库。',
+            translate: '中英互译，自动检测语言方向。',
+            currency_exchange: '查询实时汇率（frankfurter.app API）。',
+            memo: '记录和管理个人备忘录，存储在 Skill 记忆中。',
+            datetime_tool: '获取当前日期时间、计算时间差。',
+            python_executor: '在沙盒中执行 Python 代码片段。',
+        };
+        let skills=[],cats=[],aCat='all',q='';
+
+        async function init(){
+            try{
+                const d=await(await fetch(`/api/skills/?_t=${Date.now()}`)).json();
+                skills=d.skills; cats=d.categories;
+                document.getElementById('cnt').textContent=`${d.count} loaded`;
+                renderTB(); renderG();
+            }catch{document.getElementById('grid').innerHTML='<div class="empty"><div class="empty-i">⚠️</div>Failed to load</div>';}
+        }
+
+        function renderTB(){
+            const t=document.getElementById('tb');
+            let h=`<button class="chip on" data-c="all" onclick="setCat('all')">All</button>`;
+            cats.forEach(c=>{h+=`<button class="chip" data-c="${c.value}" onclick="setCat('${c.value}')">${c.label}</button>`;});
+            h+=`<div class="search-w"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-i" placeholder="Search…" oninput="q=this.value;renderG()"></div>`;
+            t.innerHTML=h;
+        }
+
+        function setCat(c){
+            aCat=c;
+            document.querySelectorAll('.chip').forEach(el=>el.classList.toggle('on',el.dataset.c===c));
+            renderG();
+        }
+
+        function renderG(){
+            const g=document.getElementById('grid');
+            let f=skills;
+            if(aCat!=='all') f=f.filter(s=>s.category===aCat);
+            if(q){const ql=q.toLowerCase();f=f.filter(s=>s.name.includes(ql)||s.description.toLowerCase().includes(ql));}
+            if(!f.length){g.innerHTML='<div class="empty"><div class="empty-i">🔍</div>No matches</div>';return;}
+            g.innerHTML=f.map(crd).join('');
+        }
+
+        function crd(s){
+            const tip = SKILL_HELP[s.name] || s.description;
+            const tipHtml = tip.replace(/\n/g,'<br>').replace(/•/g,'&bull;');
+            return `<div class="card ${s.enabled?'':'off'}" id="c-${s.name}">
+                <div class="card-main" onclick="openCfg('${s.name}')">
+                    <div class="card-top">
+                        <div class="card-icon">${s.icon}</div>
+                        <div class="card-meta">
+                            <div class="card-name-row">
+                                <span class="card-name">${s.name}</span>
+                                <span class="card-cat" style="background:${s.category_color}18;color:${s.category_color}">${s.category_label}</span>
+                                <span class="help-btn" onclick="event.stopPropagation()">?<div class="help-tip">${tipHtml}</div></span>
+                            </div>
+                            <div class="card-desc">${s.description}</div>
+                        </div>
+                    </div>
+                    <div class="card-foot">
+                        <div class="card-tags">
+                            ${s.has_config?'<span class="card-tag">⚙ Config</span>':''}
+                            ${s.has_dashboard?'<span class="card-tag dash-tag" onclick="event.stopPropagation();openDash(\''+s.name+'\')">📊 Dashboard</span>':''}
+                            <span class="card-tag">v${s.version}</span>
+                        </div>
+                        <label class="tog" onclick="event.stopPropagation()">
+                            <input type="checkbox" ${s.enabled?'checked':''} onchange="doTog('${s.name}')">
+                            <span class="tog-t"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="cfg-panel" id="p-${s.name}"><div class="cfg-inner" id="pi-${s.name}"></div></div>
+            </div>`;
+        }
+
+        let _pollTimer=null, _pollSkill=null;
+
+        async function openCfg(n){
+            const p=document.getElementById(`p-${n}`);
+            const wasOpen=p.classList.contains('open');
+            document.querySelectorAll('.cfg-panel.open').forEach(el=>el.classList.remove('open'));
+            _stopPoll();
+            if(!wasOpen){
+                p.classList.add('open');
+                await loadCfg(n);
+                _startPoll(n);
+            }
+        }
+
+        function _startPoll(n){
+            _pollSkill=n;
+            _pollTimer=setInterval(async()=>{
+                try{
+                    const ud=await fetch(`/api/skills/${n}/user_data?_t=${Date.now()}`).then(r=>r.json());
+                    const udata=ud?.data||{};
+                    const el=document.getElementById(`udata-${n}`);
+                    if(el&&Object.keys(udata).length) el.innerHTML=renderUserDataInner(n,udata);
+                }catch{}
+            },5000);
+        }
+
+        function _stopPoll(){
+            if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;_pollSkill=null;}
+        }
+
+        const FREQ_LABELS={'open_only':'仅开盘 (9:25)','30min':'每30分钟','1h':'每1小时','3h':'每3小时','off':'关闭推送'};
+        let _feishuGroups = [];
+        let _pushStatus = {};
+
+        async function loadCfg(n){
+            const c=document.getElementById(`pi-${n}`);
+            const _t=Date.now();
+            try{
+                const fetches = [
+                    fetch(`/api/skills/${n}?_t=${_t}`).then(r=>r.json()),
+                    fetch(`/api/skills/${n}/user_data?_t=${_t}`).then(r=>r.json()),
+                ];
+                if(n==='portfolio' || n==='stock_alert'){
+                    fetches.push(fetch(`/api/skills/push_targets/feishu_groups?_t=${_t}`).then(r=>r.json()).catch(()=>({groups:[]})));
+                }
+                if(n==='portfolio'){
+                    fetches.push(fetch(`/api/skills/portfolio/push_status?_t=${_t}`).then(r=>r.json()).catch(()=>({})));
+                }
+                const results = await Promise.all(fetches);
+                const [d, ud] = results;
+                if(n==='portfolio'){
+                    _feishuGroups = (results[2]||{}).groups || [];
+                    _pushStatus = results[3] || {};
+                } else if(n==='stock_alert'){
+                    _feishuGroups = (results[2]||{}).groups || [];
+                }
+                const props=d.config_schema?.properties||{};
+                const keys=Object.keys(props);
+                const cfg=d.config||{};
+                let h=`<div class="cfg-title">Configuration</div>`;
+                if(!keys.length){
+                    h+=`<div class="no-cfg">No configurable options<small>Parameters are filled by AI automatically</small></div>`;
+                }else{
+                    keys.forEach(k=>{
+                        const p=props[k],v=cfg[k]??p.default??'';
+                        h+=`<div class="cfg-row"><label class="cfg-lbl">${p.title||k}</label>`;
+                        if(k==='push_target'){
+                            h+=`<select id="v-${n}-${k}">`;
+                            h+=`<option value="private" ${v==='private'?'selected':''}>私聊（发到个人）</option>`;
+                            _feishuGroups.forEach(g=>{h+=`<option value="${g.chat_id}" ${v===g.chat_id?'selected':''}>${g.name}</option>`;});
+                            h+=`</select>`;
+                        }else if(p.enum){
+                            h+=`<select id="v-${n}-${k}">`;
+                            p.enum.forEach(o=>{h+=`<option value="${o}" ${o==v?'selected':''}>${o||'(auto)'}</option>`;});
+                            h+=`</select>`;
+                        }else if(p.type==='integer'||p.type==='number'){
+                            h+=`<input type="number" id="v-${n}-${k}" value="${v}" ${p.minimum!=null?`min="${p.minimum}"`:''} ${p.maximum!=null?`max="${p.maximum}"`:''}>`;
+                        }else{
+                            h+=`<input type="text" id="v-${n}-${k}" value="${v}">`;
+                        }
+                        if(p.description) h+=`<div class="cfg-hint">${p.description}</div>`;
+                        h+=`</div>`;
+                    });
+                    h+=`<div class="cfg-acts"><button class="btn btn-p" onclick="saveCfg('${n}',${JSON.stringify(keys)})">Save</button><button class="btn btn-g" onclick="loadCfg('${n}')">Reset</button></div>`;
+                }
+
+                const udata = ud?.data || {};
+                if(Object.keys(udata).length){
+                    h += renderUserData(n, udata);
+                }
+
+                h+=`<div class="cfg-meta">v${d.version} · ${d.category_label} · ${Object.keys(d.parameters_schema?.properties||{}).length} params</div>`;
+                c.innerHTML=h;
+            }catch{c.innerHTML='<div class="no-cfg">Load failed</div>';}
+        }
+
+        function renderUserData(skillName, data){
+            return `<div class="udata"><div class="udata-title">User Data</div><div id="udata-${skillName}">${renderUserDataInner(skillName,data)}</div></div>`;
+        }
+
+        function renderUserDataInner(skillName, data){
+            let h='';
+
+            if(skillName==='portfolio'){
+                const wl = data.watchlist || [];
+                const pc = data.push_config || {};
+                const freq = pc.frequency || 'open_only';
+                const target = pc.target || 'private';
+
+                if(wl.length){
+                    h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">`;
+                    h+=`<span style="font-size:12px;color:var(--text-2)">关注列表 (${wl.length})</span>`;
+                    h+=`</div>`;
+                    wl.forEach((item,i)=>{
+                        h+=`<div class="wl-item">`;
+                        h+=`<span><span class="wl-name">${item.name}</span><span class="wl-code">${item.code}</span></span>`;
+                        h+=`<button class="wl-rm" onclick="removeStock('${skillName}',${i})" title="移除">×</button>`;
+                        h+=`</div>`;
+                    });
+                }else{
+                    h+=`<div class="udata-empty">关注列表为空，在对话中说「添加 XX 股票」来添加</div>`;
+                }
+
+                h+=`<div style="margin-top:16px;font-size:12px;color:var(--text-2);margin-bottom:6px">推送目标</div>`;
+                h+=`<select class="target-select" onchange="setTarget('${skillName}',this.value)">`;
+                h+=`<option value="private" ${target==='private'?'selected':''}>私聊 (发到个人)</option>`;
+                _feishuGroups.forEach(g=>{
+                    h+=`<option value="${g.chat_id}" ${target===g.chat_id?'selected':''}>${g.name}</option>`;
+                });
+                h+=`</select>`;
+                if(!_feishuGroups.length){
+                    h+=`<div style="font-size:11px;color:var(--text-3);margin-top:4px">在飞书群里 @机器人 发一条消息即可添加群选项</div>`;
+                }
+
+                h+=`<div style="margin-top:12px;font-size:12px;color:var(--text-2);margin-bottom:6px">推送频率</div>`;
+                h+=`<div class="freq-bar">`;
+                Object.entries(FREQ_LABELS).forEach(([key,label])=>{
+                    h+=`<button class="freq-btn ${key===freq?'on':''}" onclick="setFreq('${skillName}','${key}')">${label}</button>`;
+                });
+                h+=`</div>`;
+
+                h += renderPushStatus();
+
+            }else{
+                const entries = Object.entries(data);
+                entries.forEach(([k,v])=>{
+                    h+=`<div class="wl-item"><span class="wl-name">${k}</span><span class="wl-code">${typeof v==='object'?JSON.stringify(v):v}</span></div>`;
+                });
+            }
+
+            return h;
+        }
+
+        function renderPushStatus(){
+            const s = _pushStatus;
+            if(!s || !s.schedule) return '';
+
+            let h = `<div class="push-panel">`;
+
+            h += `<div class="push-header">`;
+            h += `<div class="push-header-left">`;
+            h += `📅 今日推送计划`;
+            if(!s.is_trading_day) h += ` <span style="color:var(--text-3)">(非交易日)</span>`;
+            h += `</div>`;
+            h += `<button class="push-now-btn" onclick="pushNow(this)" ${s.frequency==='off'?'disabled':''}>⚡ 立即推送</button>`;
+            h += `</div>`;
+
+            if(s.next_push_time){
+                h += `<div class="push-next">下次推送: ${s.next_push_time}</div>`;
+            } else if(s.frequency==='off'){
+                h += `<div style="font-size:11px;color:var(--text-3)">推送已关闭</div>`;
+            } else {
+                h += `<div style="font-size:11px;color:var(--text-3)">今日推送已全部完成</div>`;
+            }
+
+            const nodes = s.schedule || [];
+            if(nodes.length){
+                const nextIdx = nodes.findIndex(n => !n.done);
+                h += `<div class="push-timeline">`;
+                nodes.forEach((n, i) => {
+                    if(i > 0) h += `<div class="tl-line ${n.done || nodes[i-1].done ? 'done' : ''}"></div>`;
+                    const cls = n.done ? 'done' : (i === nextIdx ? 'next' : '');
+                    h += `<div class="tl-node">`;
+                    h += `<div class="tl-dot ${cls}"></div>`;
+                    h += `<div class="tl-time">${n.time}</div>`;
+                    h += `</div>`;
+                });
+                h += `</div>`;
+            }
+
+            let meta = [];
+            if(s.last_push_at) meta.push(`上次推送: ${s.last_push_at}`);
+            if(s.server_time) meta.push(`服务器: ${s.server_time}`);
+            if(meta.length) h += `<div class="push-meta">${meta.join(' · ')}</div>`;
+
+            h += `</div>`;
+            return h;
+        }
+
+        async function pushNow(btn){
+            btn.disabled = true;
+            btn.textContent = '⏳ 发送中...';
+            try{
+                const r = await fetch('/api/skills/portfolio/push_now', {method:'POST'});
+                const d = await r.json();
+                if(d.success){
+                    toast('推送已发送');
+                    btn.textContent = '✅ 已发送';
+                    setTimeout(()=>{ btn.textContent='⚡ 立即推送'; btn.disabled=false; }, 3000);
+                    await loadCfg('portfolio');
+                } else {
+                    toast(d.error || '推送失败');
+                    btn.textContent = '⚡ 立即推送';
+                    btn.disabled = false;
+                }
+            }catch{
+                toast('请求失败');
+                btn.textContent = '⚡ 立即推送';
+                btn.disabled = false;
+            }
+        }
+
+        async function _getPushConfig(skillName){
+            const ud = await fetch(`/api/skills/${skillName}/user_data?_t=${Date.now()}`).then(r=>r.json());
+            return (ud?.data?.push_config) || {};
+        }
+
+        async function setFreq(skillName, freq){
+            try{
+                const pc = await _getPushConfig(skillName);
+                pc.frequency = freq;
+                const r = await fetch(`/api/skills/${skillName}/user_data`,{
+                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({key:'push_config', value:pc}),
+                });
+                const d = await r.json();
+                if(d.success){
+                    toast(`推送频率: ${FREQ_LABELS[freq]}`);
+                    await loadCfg(skillName);
+                }else{ toast('修改失败'); }
+            }catch{ toast('请求失败'); }
+        }
+
+        async function setTarget(skillName, target){
+            try{
+                const pc = await _getPushConfig(skillName);
+                pc.target = target;
+                const r = await fetch(`/api/skills/${skillName}/user_data`,{
+                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({key:'push_config', value:pc}),
+                });
+                const d = await r.json();
+                if(d.success){
+                    const label = target==='private' ? '私聊' : (_feishuGroups.find(g=>g.chat_id===target)?.name || target);
+                    toast(`推送目标: ${label}`);
+                }else{ toast('修改失败'); }
+            }catch{ toast('请求失败'); }
+        }
+
+        async function removeStock(skillName, idx){
+            try{
+                const ud = await fetch(`/api/skills/${skillName}/user_data?_t=${Date.now()}`).then(r=>r.json());
+                const wl = ud?.data?.watchlist || [];
+                if(idx<0||idx>=wl.length) return;
+                const removed = wl[idx].name;
+                wl.splice(idx,1);
+                const r = await fetch(`/api/skills/${skillName}/user_data`,{
+                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({key:'watchlist', value:wl}),
+                });
+                const d = await r.json();
+                if(d.success){
+                    toast(`已移除 ${removed}`);
+                    await loadCfg(skillName);
+                }else{ toast('移除失败'); }
+            }catch{ toast('请求失败'); }
+        }
+
+        async function saveCfg(n,keys){
+            const cfg={};
+            keys.forEach(k=>{const el=document.getElementById(`v-${n}-${k}`);cfg[k]=el?.type==='number'?Number(el.value):el?.value;});
+            try{
+                const d=await(await fetch(`/api/skills/skill/${n}/config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({config:cfg})})).json();
+                toast(d.success?`${n} saved`:'Failed');
+            }catch{toast('Error');}
+        }
+
+        async function doTog(n){
+            try{
+                const d=await(await fetch(`/api/skills/${n}/toggle`,{method:'POST'})).json();
+                const s=skills.find(x=>x.name===n);
+                if(s)s.enabled=d.enabled;
+                document.getElementById(`c-${n}`)?.classList.toggle('off',!d.enabled);
+                toast(`${n} ${d.enabled?'enabled':'disabled'}`);
+            }catch{toast('Failed');}
+        }
+
+        function openDash(name){
+            window.open(`/dashboards/${name}.html`, '_blank');
+        }
+
+        function toast(m){
+            const t=document.getElementById('toast');
+            t.textContent=m; t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'),2000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

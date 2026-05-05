@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Assistant CN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#0a0a0a; --bg-raised:#111113; --bg-elevated:#18181b;
+            --surface:#1c1c20; --surface-hi:#242428;
+            --border:rgba(255,255,255,0.07); --border-hi:rgba(255,255,255,0.13);
+            --shine:rgba(255,255,255,0.04);
+            --text:#ececec; --text-2:#8b8b92; --text-3:#53535a;
+            --accent:#7c5cfc; --accent-hi:#9b85fc;
+            --accent-glow:rgba(124,92,252,0.18);
+            --green:#34d399; --red:#f87171;
+            --r:10px; --r2:14px;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            font-family:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
+            background:var(--bg);color:var(--text);
+            display:flex;flex-direction:column;
+            -webkit-font-smoothing:antialiased;
+        }
+        body::after{
+            content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.022;
+            background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size:180px;
+        }
+
+        /* ── Header ── */
+        header{
+            height:52px;padding:0 16px;display:flex;align-items:center;gap:10px;
+            background:linear-gradient(180deg,#141416,#111113);
+            border-bottom:1px solid var(--border);
+            box-shadow:inset 0 1px 0 var(--shine),0 1px 3px rgba(0,0,0,0.4);
+            position:sticky;top:0;z-index:100;
+        }
+        .hdr-btn{
+            width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
+            background:var(--bg-raised);box-shadow:inset 0 1px 0 var(--shine);
+            color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+            transition:all 0.12s;flex-shrink:0;
+        }
+        .hdr-btn:hover{background:var(--surface);border-color:var(--border-hi);color:var(--text)}
+        .hdr-btn svg{width:15px;height:15px}
+        .logo{
+            width:26px;height:26px;border-radius:7px;
+            background:linear-gradient(135deg,#7c5cfc,#5b3fd9);
+            box-shadow:0 0 8px rgba(124,92,252,0.3),inset 0 1px 0 rgba(255,255,255,0.15);
+            display:flex;align-items:center;justify-content:center;
+            font-size:12px;font-weight:700;color:#fff;
+        }
+        header h1{font-size:13px;font-weight:600;letter-spacing:-0.01em}
+        .spacer{flex:1}
+        .nav-link{
+            display:flex;align-items:center;gap:6px;
+            padding:5px 11px;border-radius:7px;
+            background:var(--bg-raised);border:1px solid var(--border);
+            box-shadow:inset 0 1px 0 var(--shine);
+            color:var(--text-2);font-size:12px;font-weight:500;
+            text-decoration:none;transition:all 0.15s;
+        }
+        .nav-link:hover{background:var(--surface);border-color:var(--border-hi);color:var(--text)}
+        .nav-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 5px rgba(52,211,153,0.5)}
+
+        /* ── Sidebar ── */
+        .sidebar-overlay{
+            position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;
+            opacity:0;pointer-events:none;transition:opacity 0.2s;
+        }
+        .sidebar-overlay.open{opacity:1;pointer-events:auto}
+        .sidebar{
+            position:fixed;left:0;top:0;bottom:0;width:280px;z-index:201;
+            background:linear-gradient(180deg,var(--bg-elevated),var(--bg));
+            border-right:1px solid var(--border);
+            box-shadow:4px 0 20px rgba(0,0,0,0.4);
+            transform:translateX(-100%);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);
+            display:flex;flex-direction:column;
+        }
+        .sidebar.open{transform:translateX(0)}
+        .sb-header{
+            padding:14px 16px;border-bottom:1px solid var(--border);
+            display:flex;align-items:center;justify-content:space-between;
+        }
+        .sb-header h2{font-size:13px;font-weight:600}
+        .sb-new{
+            padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+            background:var(--bg-raised);box-shadow:inset 0 1px 0 var(--shine);
+            color:var(--text-2);font-size:11px;font-weight:500;cursor:pointer;
+            transition:all 0.12s;font-family:inherit;
+        }
+        .sb-new:hover{background:var(--surface);color:var(--text)}
+        .sb-list{flex:1;overflow-y:auto;padding:8px}
+        .sb-list::-webkit-scrollbar{width:3px}
+        .sb-list::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
+        .sb-item{
+            padding:10px 12px;border-radius:8px;cursor:pointer;
+            margin-bottom:2px;transition:background 0.12s;
+        }
+        .sb-item:hover{background:var(--surface)}
+        .sb-item.active{background:var(--accent-glow);border:1px solid rgba(124,92,252,0.2)}
+        .sb-item-title{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .sb-item-time{font-size:10px;color:var(--text-3);margin-top:2px}
+        .sb-empty{padding:40px 16px;text-align:center;color:var(--text-3);font-size:12px}
+
+        /* ── Chat ── */
+        #chat{flex:1;overflow-y:auto}
+        #chat::-webkit-scrollbar{width:5px}
+        #chat::-webkit-scrollbar-track{background:transparent}
+        #chat::-webkit-scrollbar-thumb{background:var(--surface);border-radius:3px}
+        .center{max-width:720px;width:100%;margin:0 auto;padding:0 20px}
+
+        .welcome{padding:40px 0 20px}
+        .welcome-card{
+            background:linear-gradient(180deg,var(--bg-elevated),var(--bg-raised));
+            border:1px solid var(--border);
+            box-shadow:inset 0 1px 0 var(--shine),0 2px 8px rgba(0,0,0,0.3);
+            border-radius:var(--r2);padding:24px;
+        }
+        .welcome-card h2{font-size:15px;font-weight:600;margin-bottom:6px}
+        .welcome-card p{font-size:13px;line-height:1.65;color:var(--text-2)}
+
+        .m-row{padding:6px 0}
+        .m-row.user{display:flex;justify-content:flex-end}
+        .m-row.assistant{display:flex;justify-content:flex-start}
+        .m-row.status{display:flex;justify-content:flex-start}
+        .bubble{max-width:82%;font-size:14px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+        .bubble.user{
+            background:linear-gradient(135deg,#7c5cfc,#6246d9);color:#fff;padding:10px 16px;
+            border-radius:16px 16px 4px 16px;
+            box-shadow:0 2px 8px rgba(124,92,252,0.25),inset 0 1px 0 rgba(255,255,255,0.12);
+        }
+        .bubble.assistant{
+            background:linear-gradient(180deg,var(--bg-elevated),var(--bg-raised));
+            border:1px solid var(--border);
+            box-shadow:inset 0 1px 0 var(--shine),0 1px 4px rgba(0,0,0,0.2);
+            padding:12px 16px;border-radius:16px 16px 16px 4px;color:var(--text);
+        }
+        .bubble.status{font-size:12px;color:var(--text-3);padding:2px 0;display:flex;align-items:center;gap:6px}
+        .bubble.status::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent-glow);animation:pulse 1.5s infinite}
+        @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+        .bubble.error{font-size:13px;color:var(--red);padding:10px 14px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.12);border-radius:var(--r)}
+
+        .sr-card{
+            background:linear-gradient(180deg,var(--bg-elevated),var(--bg-raised));
+            border:1px solid var(--border);box-shadow:inset 0 1px 0 var(--shine),0 1px 4px rgba(0,0,0,0.2);
+            border-radius:var(--r);padding:12px 14px;margin:6px 0;font-size:13px;
+        }
+        .sr-head{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-2);margin-bottom:4px}
+        .sr-dot{width:5px;height:5px;border-radius:50%}
+        .sr-body{color:var(--text-2);line-height:1.5}
+        .sr-img{margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+        .sr-img img{width:100%;display:block;border-radius:8px}
+
+        .typing{display:flex;gap:4px;padding:8px 0}
+        .typing span{width:5px;height:5px;border-radius:50%;background:var(--text-3);animation:dot 1.4s infinite ease-in-out}
+        .typing span:nth-child(2){animation-delay:.15s}
+        .typing span:nth-child(3){animation-delay:.3s}
+        @keyframes dot{0%,80%,100%{opacity:.3;transform:scale(1)}40%{opacity:1;transform:scale(1.3)}}
+
+        #input-area{padding:12px 0 20px}
+        .input-shell{
+            background:linear-gradient(180deg,var(--surface),var(--bg-elevated));
+            border:1px solid var(--border-hi);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 -1px 20px rgba(0,0,0,0.2),0 4px 16px rgba(0,0,0,0.3);
+            border-radius:var(--r2);display:flex;align-items:flex-end;gap:8px;padding:6px 6px 6px 16px;
+        }
+        .input-shell:focus-within{border-color:rgba(124,92,252,0.45);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 0 0 3px var(--accent-glow),0 4px 16px rgba(0,0,0,0.3)}
+        #msg-input{flex:1;background:transparent;border:none;color:var(--text);font-size:14px;font-family:inherit;outline:none;resize:none;min-height:38px;max-height:150px;padding:6px 0;line-height:1.5}
+        #msg-input::placeholder{color:var(--text-3)}
+        #send-btn{
+            width:34px;height:34px;border-radius:9px;border:none;
+            background:linear-gradient(135deg,#7c5cfc,#6246d9);
+            box-shadow:0 1px 4px rgba(124,92,252,0.3),inset 0 1px 0 rgba(255,255,255,0.15);
+            color:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+            transition:transform 0.1s,box-shadow 0.15s;
+        }
+        #send-btn:hover{transform:scale(1.06);box-shadow:0 2px 10px rgba(124,92,252,0.45),inset 0 1px 0 rgba(255,255,255,0.15)}
+        #send-btn:active{transform:scale(0.96)}
+        #send-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+        #send-btn svg{width:15px;height:15px}
+        .input-hint{text-align:center;padding-top:8px;font-size:11px;color:var(--text-3)}
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sb-header">
+            <h2>历史对话</h2>
+            <button class="sb-new" onclick="newChat()">+ 新对话</button>
+        </div>
+        <div class="sb-list" id="sb-list"></div>
+    </div>
+
+    <header>
+        <button class="hdr-btn" onclick="toggleSidebar()" title="历史对话">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="logo">A</div>
+        <h1>Personal Assistant</h1>
+        <div class="spacer"></div>
+        <a href="/static/dashboards/dashboard.html" class="nav-link">
+            <span class="nav-dot" style="background:#ef5350"></span>Dashboard
+        </a>
+        <a href="/static/skills.html" class="nav-link">
+            <span class="nav-dot"></span><span id="skill-count">…</span>
+        </a>
+        <a href="/static/router.html" class="nav-link">
+            <span class="nav-dot" style="background:#fbbf24"></span>Router
+        </a>
+        <a href="/static/companion.html" class="nav-link">
+            <span class="nav-dot" style="background:#f472b6"></span>伴侣
+        </a>
+    </header>
+
+    <div id="chat">
+        <div class="center">
+            <div class="welcome" id="welcome"><div class="welcome-card">
+                <h2>你好 👋</h2>
+                <p>我是你的个人 AI 助手，可以搜索信息、翻译、查天气、执行代码等。<br>直接输入你的问题，或点击左上角查看历史对话。</p>
+            </div></div>
+            <div id="messages"></div>
+        </div>
+    </div>
+
+    <div class="center">
+        <div id="input-area">
+            <div class="input-shell">
+                <textarea id="msg-input" placeholder="发送消息…" rows="1"></textarea>
+                <button id="send-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+            <div class="input-hint">Enter 发送 · Shift+Enter 换行</div>
+        </div>
+    </div>
+
+    <script>
+        const msgs = document.getElementById('messages');
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('msg-input');
+        const btn = document.getElementById('send-btn');
+        const welcome = document.getElementById('welcome');
+        let convId = null, streaming = false, firstMsg = '';
+
+        const STORE_KEY = 'pa_conversations';
+
+        fetch('/api/skills/').then(r=>r.json()).then(d=>{
+            document.getElementById('skill-count').textContent=`${d.count} Skills`;
+        }).catch(()=>{});
+
+        // ── localStorage helpers ──
+        function loadConvList(){ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }
+        function saveConvList(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+
+        function saveConv(id, title){
+            const list = loadConvList();
+            const idx = list.findIndex(c=>c.id===id);
+            const entry = {id, title: title.slice(0,40), updatedAt: Date.now()};
+            if(idx>=0) list[idx]=entry; else list.unshift(entry);
+            saveConvList(list);
+            renderSidebar();
+        }
+
+        function renderSidebar(){
+            const list = loadConvList();
+            const el = document.getElementById('sb-list');
+            if(!list.length){ el.innerHTML='<div class="sb-empty">暂无历史对话</div>'; return; }
+            el.innerHTML = list.map(c=>{
+                const d = new Date(c.updatedAt);
+                const ts = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+                return `<div class="sb-item ${c.id===convId?'active':''}" onclick="switchConv('${c.id}')">
+                    <div class="sb-item-title">${esc(c.title)}</div>
+                    <div class="sb-item-time">${ts}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+        // ── Sidebar toggle ──
+        function toggleSidebar(){
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('open');
+            renderSidebar();
+        }
+        function closeSidebar(){
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('overlay').classList.remove('open');
+        }
+
+        // ── New chat ──
+        function newChat(){
+            convId=null; firstMsg='';
+            msgs.innerHTML=''; welcome.style.display='';
+            closeSidebar();
+            input.focus();
+        }
+
+        // ── Switch conversation ──
+        async function switchConv(id){
+            convId=id; firstMsg='loaded';
+            msgs.innerHTML=''; welcome.style.display='none';
+            closeSidebar();
+
+            try{
+                const res = await fetch(`/api/conversations/${id}/history`);
+                const data = await res.json();
+                for(const m of (data.messages||[])){
+                    if(m.role==='user') addBubble(m.content,'user');
+                    else if(m.role==='assistant') addBubble(m.content,'assistant');
+                }
+            }catch(e){
+                addBubble('加载历史失败','error');
+            }
+            renderSidebar();
+            input.focus();
+        }
+
+        // ── Chat rendering ──
+        function scroll(){ chat.scrollTop = chat.scrollHeight; }
+
+        function md(text){
+            return text
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+                .replace(/`(.+?)`/g,'<code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:13px">$1</code>')
+                .replace(/\n/g,'<br>');
+        }
+
+        function addBubble(text, type){
+            const row = document.createElement('div');
+            row.className = `m-row ${type}`;
+            const b = document.createElement('div');
+            b.className = `bubble ${type}`;
+            if(type==='assistant'||type==='error') b.innerHTML = md(text);
+            else b.textContent = text;
+            row.appendChild(b); msgs.appendChild(row); scroll();
+            return b;
+        }
+        function addTyping(){
+            const d = document.createElement('div');
+            d.className='typing'; d.id='typing';
+            d.innerHTML='<span></span><span></span><span></span>';
+            msgs.appendChild(d); scroll();
+        }
+        function rmTyping(){ document.getElementById('typing')?.remove(); }
+
+        // ── Send message ──
+        async function send(){
+            const text = input.value.trim();
+            if(!text||streaming) return;
+            streaming=true; btn.disabled=true;
+            input.value=''; input.style.height='auto';
+
+            if(!firstMsg){ firstMsg=text; welcome.style.display='none'; }
+
+            addBubble(text,'user'); addTyping();
+
+            let aDiv=null, full='';
+            try {
+                const res = await fetch('/api/chat',{
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({message:text, conversation_id:convId, user_id:'default_user', stream:true}),
+                });
+                const reader=res.body.getReader(), dec=new TextDecoder();
+                let buf='', ev='';
+                while(true){
+                    const {done,value}=await reader.read();
+                    if(done) break;
+                    buf+=dec.decode(value,{stream:true});
+                    const lines=buf.split('\n'); buf=lines.pop();
+                    for(const l of lines){
+                        if(l.startsWith('event: ')) ev=l.slice(7).trim();
+                        else if(l.startsWith('data: ')&&ev) sse(ev,l.slice(6));
+                    }
+                }
+            } catch(e){ rmTyping(); addBubble(`连接错误: ${e.message}`,'error'); }
+            streaming=false; btn.disabled=false; input.focus();
+
+            function sse(type,data){
+                switch(type){
+                    case 'metadata':
+                        try{
+                            const cid = JSON.parse(data).conversation_id;
+                            if(cid){ convId=cid; saveConv(cid, firstMsg); }
+                        }catch{}
+                        break;
+                    case 'status': rmTyping(); addBubble(data,'status'); addTyping(); break;
+                    case 'message':
+                        rmTyping();
+                        if(!aDiv) aDiv=addBubble('','assistant');
+                        full+=data; aDiv.innerHTML=md(full); scroll();
+                        break;
+                    case 'skill_result':
+                        rmTyping();
+                        try{
+                            const sr=JSON.parse(data);
+                            const c=document.createElement('div');
+                            c.className='sr-card';
+                            let html=`<div class="sr-head"><span class="sr-dot" style="background:${sr.success?'var(--green)':'var(--red)'}"></span>${sr.skill}</div>`;
+                            html+=`<div class="sr-body">${sr.success?(sr.summary||'').slice(0,300):sr.error}</div>`;
+                            if(sr.ui_card?.image){
+                                html+=`<div class="sr-img"><img src="${sr.ui_card.image}" alt="${sr.ui_card.title||'chart'}"></div>`;
+                            }
+                            c.innerHTML=html;
+                            msgs.appendChild(c);
+                        }catch{}
+                        addTyping(); break;
+                    case 'error': rmTyping(); addBubble(data,'error'); break;
+                    case 'done': rmTyping(); break;
+                }
+            }
+        }
+
+        btn.addEventListener('click',send);
+        input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+        input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,150)+'px';});
+        input.focus();
+    </script>
+</body>
+</html>

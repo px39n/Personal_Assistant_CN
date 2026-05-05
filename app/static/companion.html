@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>聊天伴侣 — Personal Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;--bg-raised:#111113;--bg-elevated:#18181b;
+  --surface:#1c1c20;--surface-hi:#242428;
+  --border:rgba(255,255,255,0.07);--border-hi:rgba(255,255,255,0.13);
+  --shine:rgba(255,255,255,0.04);
+  --text:#ececec;--text-2:#8b8b92;--text-3:#53535a;
+  --accent:#7c5cfc;--accent-hi:#9b85fc;--accent-glow:rgba(124,92,252,0.18);
+  --green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#60a5fa;--pink:#f472b6;
+  --r:10px;--r2:14px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Inter',ui-sans-serif,system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+header{
+  height:52px;padding:0 16px;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,#141416,#111113);
+  border-bottom:1px solid var(--border);
+  box-shadow:inset 0 1px 0 var(--shine),0 1px 3px rgba(0,0,0,0.4);
+  position:sticky;top:0;z-index:100;
+}
+.logo{
+  width:26px;height:26px;border-radius:7px;
+  background:linear-gradient(135deg,#f472b6,#ec4899);
+  box-shadow:0 0 8px rgba(244,114,182,0.3),inset 0 1px 0 rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#fff;
+}
+header h1{font-size:13px;font-weight:600;letter-spacing:-0.01em}
+.spacer{flex:1}
+.nav-link{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 11px;border-radius:7px;
+  background:var(--bg-raised);border:1px solid var(--border);
+  box-shadow:inset 0 1px 0 var(--shine);
+  color:var(--text-2);font-size:12px;font-weight:500;
+  text-decoration:none;transition:all 0.15s;
+}
+.nav-link:hover{background:var(--surface);border-color:var(--border-hi);color:var(--text)}
+.nav-link.active{background:var(--accent-glow);border-color:rgba(124,92,252,0.3);color:var(--accent-hi)}
+.nav-dot{width:5px;height:5px;border-radius:50%;box-shadow:0 0 5px currentColor}
+
+.main{max-width:900px;margin:0 auto;padding:24px 16px}
+.tabs{display:flex;gap:2px;background:var(--bg-raised);border-radius:var(--r);padding:3px;border:1px solid var(--border);margin-bottom:24px}
+.tab-btn{
+  flex:1;padding:8px 0;text-align:center;border-radius:8px;
+  background:transparent;border:none;color:var(--text-2);
+  font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+.panel{display:none}
+.panel.active{display:block}
+
+.card{
+  background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--r2);
+  padding:20px;margin-bottom:16px;
+  box-shadow:inset 0 1px 0 var(--shine),0 2px 8px rgba(0,0,0,.2);
+}
+.card h2{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 .ico{font-size:18px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--text-2);margin-bottom:6px;font-weight:500}
+.field input,.field textarea,.field select{
+  width:100%;padding:9px 12px;
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;font-family:inherit;
+  transition:border-color .15s;
+}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:70px;line-height:1.5}
+.field .hint{font-size:11px;color:var(--text-3);margin-top:4px}
+
+.btn{
+  padding:8px 16px;border-radius:8px;border:none;
+  font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .15s;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hi)}
+.btn-danger{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.btn-danger:hover{background:rgba(248,113,113,.25)}
+.btn-ghost{background:var(--surface);color:var(--text-2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border-hi)}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+.mem-list{list-style:none}
+.mem-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:8px;
+  background:var(--bg);border:1px solid var(--border);
+  margin-bottom:8px;font-size:13px;
+}
+.mem-item .content{flex:1;color:var(--text)}
+.mem-item .date{font-size:11px;color:var(--text-3);white-space:nowrap}
+.mem-item .del{
+  width:24px;height:24px;border-radius:6px;border:none;
+  background:transparent;color:var(--text-3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;transition:all .15s;
+}
+.mem-item .del:hover{background:rgba(248,113,113,.15);color:var(--red)}
+
+.chat-test{display:flex;flex-direction:column;height:360px}
+.chat-msgs{
+  flex:1;overflow-y:auto;padding:12px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  margin-bottom:12px;
+}
+.chat-bubble{
+  max-width:80%;padding:8px 12px;border-radius:12px;
+  font-size:13px;line-height:1.5;margin-bottom:8px;
+  word-break:break-word;
+}
+.chat-bubble.user{
+  background:var(--accent);color:#fff;margin-left:auto;
+  border-bottom-right-radius:4px;
+}
+.chat-bubble.assistant{
+  background:var(--surface);color:var(--text);
+  border-bottom-left-radius:4px;
+}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{
+  flex:1;padding:9px 12px;background:var(--bg);
+  border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:13px;font-family:inherit;
+}
+.chat-input:focus{outline:none;border-color:var(--accent)}
+
+.log-table{width:100%;border-collapse:collapse;font-size:12px}
+.log-table th{text-align:left;color:var(--text-3);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:500}
+.log-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:top}
+.log-table td:first-child{white-space:nowrap;width:140px}
+.log-table .role-user{color:var(--accent-hi)}
+.log-table .role-asst{color:var(--pink)}
+
+.wish-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px;border-radius:8px;
+  background:var(--bg);border:1px solid var(--border);
+  margin-bottom:8px;font-size:13px;
+}
+.wish-item .wish-desc{flex:1}
+.wish-item .wish-desc .wish-title{color:var(--text);font-weight:500}
+.wish-item .wish-desc .wish-meta{font-size:11px;color:var(--text-3);margin-top:3px}
+.wish-item .wish-desc .wish-orig{font-size:11px;color:var(--text-3);margin-top:2px;font-style:italic}
+.wish-badge{
+  padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;cursor:pointer;
+  border:none;transition:all .15s;
+}
+.wish-badge.pending{background:rgba(251,191,36,.15);color:var(--yellow)}
+.wish-badge.done{background:rgba(52,211,153,.15);color:var(--green)}
+.wish-badge.rejected{background:rgba(248,113,113,.12);color:var(--red)}
+
+.empty{text-align:center;padding:30px;color:var(--text-3);font-size:13px}
+
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:var(--r);
+  padding:10px 20px;font-size:13px;color:var(--green);
+  opacity:0;pointer-events:none;transition:all .3s;z-index:999;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">💬</div>
+  <h1>聊天伴侣</h1>
+  <div class="spacer"></div>
+  <a href="/static/index.html" class="nav-link">Chat</a>
+  <a href="/static/skills.html" class="nav-link">Skills</a>
+  <a href="/static/dashboards/dashboard.html" class="nav-link"><span class="nav-dot" style="background:#ef5350;color:#ef5350"></span>Dashboard</a>
+  <a href="/static/router.html" class="nav-link"><span class="nav-dot" style="background:var(--yellow);color:var(--yellow)"></span>Router</a>
+  <a href="/static/companion.html" class="nav-link active"><span class="nav-dot" style="background:var(--pink);color:var(--pink)"></span>伴侣</a>
+</header>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="persona">🎭 人设</button>
+    <button class="tab-btn" data-tab="memory">🧠 记忆</button>
+    <button class="tab-btn" data-tab="test">💬 测试</button>
+    <button class="tab-btn" data-tab="log">📜 聊天记录</button>
+    <button class="tab-btn" data-tab="wishes">🌟 许愿池</button>
+    <button class="tab-btn" data-tab="group">🔗 调教群</button>
+  </div>
+
+  <!-- ── 人设 ── -->
+  <div id="panel-persona" class="panel active">
+    <div class="card">
+      <h2><span class="ico">🎭</span>人设设定</h2>
+      <div class="field">
+        <label>伴侣昵称</label>
+        <input id="cfg-nickname" placeholder="给我取个名字吧">
+        <div class="hint">伴侣会以这个名字自称</div>
+      </div>
+      <div class="field">
+        <label>称呼用户</label>
+        <input id="cfg-user-call" placeholder="怎么称呼你？如：主人、宝、亲爱的">
+      </div>
+      <div class="field">
+        <label>性格描述</label>
+        <textarea id="cfg-personality" placeholder="描述伴侣的性格特征，如：温柔体贴、偶尔调皮、有幽默感"></textarea>
+      </div>
+      <div class="field">
+        <label>语气风格</label>
+        <textarea id="cfg-tone" placeholder="描述说话风格，如：亲切自然，像朋友一样聊天"></textarea>
+      </div>
+      <div class="field">
+        <label>自我介绍</label>
+        <textarea id="cfg-intro" placeholder="伴侣向用户介绍自己时会说什么"></textarea>
+      </div>
+      <div class="field">
+        <label>额外系统提示词</label>
+        <textarea id="cfg-extra" placeholder="（可选）添加任何额外的行为规则或角色设定"></textarea>
+        <div class="hint">会附加在系统提示词末尾，可用于精细控制行为</div>
+      </div>
+      <div class="field">
+        <label>LLM 模型</label>
+        <input id="cfg-model" placeholder="留空使用默认模型">
+        <div class="hint">填写模型名称切换内核，如 gpt-5.4、claude-sonnet-4-6。留空 = 跟随全局 fast model</div>
+      </div>
+      <div id="model-status" style="font-size:12px;color:var(--text-3);margin-bottom:12px"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="loadPersona()">重置</button>
+        <button class="btn btn-primary" onclick="savePersona()">保存设定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 记忆 ── -->
+  <div id="panel-memory" class="panel">
+    <div class="card">
+      <h2><span class="ico">🧠</span>关于用户的记忆</h2>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">
+        这些信息会被伴侣在聊天时参考。也可以在调教群中通过"记住XXX"或"忘记XXX"来管理。
+      </p>
+      <ul class="mem-list" id="mem-list"></ul>
+      <div id="mem-empty" class="empty" style="display:none">还没有记忆，添加一条吧～</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <input id="mem-input" class="chat-input" placeholder="输入要记住的内容...">
+        <button class="btn btn-primary" onclick="addMemory()">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 测试 ── -->
+  <div id="panel-test" class="panel">
+    <div class="card">
+      <h2><span class="ico">💬</span>聊天测试</h2>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">
+        直接与伴侣对话测试人设效果。调教命令（记住/忘记/叫我/改名）也可以在这里测试。
+      </p>
+      <div class="chat-test">
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-input-row">
+          <input id="chat-input" class="chat-input" placeholder="说点什么..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 聊天记录 ── -->
+  <div id="panel-log" class="panel">
+    <div class="card">
+      <h2><span class="ico">📜</span>近期聊天记录</h2>
+      <div class="btn-row" style="margin-top:0;margin-bottom:14px">
+        <button class="btn btn-ghost" onclick="loadChatLog()">刷新</button>
+        <button class="btn btn-danger" onclick="clearChatLog()">清空记录</button>
+      </div>
+      <table class="log-table" id="log-table">
+        <thead><tr><th>时间</th><th>角色</th><th>内容</th></tr></thead>
+        <tbody id="log-body"></tbody>
+      </table>
+      <div id="log-empty" class="empty" style="display:none">暂无聊天记录</div>
+    </div>
+  </div>
+
+  <!-- ── 许愿池 ── -->
+  <div id="panel-wishes" class="panel">
+    <div class="card">
+      <h2><span class="ico">🌟</span>功能许愿池</h2>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">
+        当伴侣检测到你想要的功能超出当前能力范围时，会自动记录在这里。你也可以手动添加希望的功能。
+      </p>
+      <div id="wish-list"></div>
+      <div id="wish-empty" class="empty" style="display:none">还没有许愿～和伴侣聊聊你想要什么功能吧</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <input id="wish-input" class="chat-input" placeholder="描述你希望的功能..." onkeydown="if(event.key==='Enter')addWishManual()">
+        <button class="btn btn-primary" onclick="addWishManual()">许愿</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 调教群 ── -->
+  <div id="panel-group" class="panel">
+    <div class="card">
+      <h2><span class="ico">🔗</span>专属调教群</h2>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:14px">
+        选择一个飞书群作为伴侣的专属调教群。在该群中：<br>
+        • 只允许与伴侣聊天，不触发其他工具<br>
+        • 用户可以通过"记住/忘记/叫我/改名"等指令调教伴侣<br>
+        • 如果用户问工作相关的问题，伴侣会说"下班不要聊正事哦～"
+      </p>
+      <div class="field">
+        <label>飞书群聊</label>
+        <select id="group-select">
+          <option value="">未设置（不限制）</option>
+        </select>
+        <div class="hint">先在飞书中 @机器人 发一条消息，群聊就会出现在这里</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="clearGroup()">取消绑定</button>
+        <button class="btn btn-primary" onclick="saveGroup()">保存</button>
+      </div>
+      <div id="group-status" style="margin-top:12px;font-size:12px;color:var(--text-3)"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/skills';
+let currentConfig = {};
+
+function toast(msg, ms=2000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+  if (tab === 'memory') loadMemories();
+  if (tab === 'log') loadChatLog();
+  if (tab === 'group') loadGroupConfig();
+  if (tab === 'wishes') loadWishes();
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+async function loadPersona() {
+  const r = await fetch(`${API}/companion/config`, {cache:'no-store'});
+  const d = await r.json();
+  currentConfig = d.config || {};
+  document.getElementById('cfg-nickname').value = currentConfig.nickname || '';
+  document.getElementById('cfg-user-call').value = currentConfig.user_call || '';
+  document.getElementById('cfg-personality').value = currentConfig.personality || '';
+  document.getElementById('cfg-tone').value = currentConfig.tone || '';
+  document.getElementById('cfg-intro').value = currentConfig.intro || '';
+  document.getElementById('cfg-extra').value = currentConfig.system_prompt_extra || '';
+  document.getElementById('cfg-model').value = currentConfig.llm_model || '';
+  const ms = document.getElementById('model-status');
+  if (currentConfig.llm_model) {
+    ms.innerHTML = `当前内核: <strong style="color:var(--green)">${escHtml(currentConfig.llm_model)}</strong>`;
+  } else {
+    ms.textContent = '当前内核: 默认 (跟随全局 fast model)';
+  }
+}
+
+async function savePersona() {
+  const cfg = {
+    nickname: document.getElementById('cfg-nickname').value.trim(),
+    user_call: document.getElementById('cfg-user-call').value.trim(),
+    personality: document.getElementById('cfg-personality').value.trim(),
+    tone: document.getElementById('cfg-tone').value.trim(),
+    intro: document.getElementById('cfg-intro').value.trim(),
+    system_prompt_extra: document.getElementById('cfg-extra').value.trim(),
+    llm_model: document.getElementById('cfg-model').value.trim(),
+  };
+  await fetch(`${API}/companion/config`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({config: cfg}),
+  });
+  toast('人设已保存 ✓');
+}
+
+async function loadMemories() {
+  const r = await fetch(`${API}/companion/memories`, {cache:'no-store'});
+  const d = await r.json();
+  const list = document.getElementById('mem-list');
+  const empty = document.getElementById('mem-empty');
+  const mems = d.memories || [];
+  list.innerHTML = '';
+  if (!mems.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  mems.forEach((m, i) => {
+    const li = document.createElement('li');
+    li.className = 'mem-item';
+    const dateStr = m.added ? new Date(m.added).toLocaleDateString('zh-CN') : '';
+    li.innerHTML = `
+      <span class="content">${escHtml(m.content)}</span>
+      <span class="date">${dateStr}</span>
+      <button class="del" title="删除" onclick="deleteMemory(${i})">×</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+async function addMemory() {
+  const input = document.getElementById('mem-input');
+  const content = input.value.trim();
+  if (!content) return;
+  await fetch(`${API}/companion/memories`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({content}),
+  });
+  input.value = '';
+  toast('记忆已添加 ✓');
+  loadMemories();
+}
+
+async function deleteMemory(idx) {
+  await fetch(`${API}/companion/memories/${idx}`, {method:'DELETE'});
+  toast('记忆已删除');
+  loadMemories();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendBubble('user', msg);
+  appendBubble('assistant', '...');
+  try {
+    const r = await fetch(`${API}/companion/test_chat`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg}),
+    });
+    const d = await r.json();
+    removeLastBubble();
+    appendBubble('assistant', d.reply || d.error || '(无回复)');
+  } catch (e) {
+    removeLastBubble();
+    appendBubble('assistant', '出错了: ' + e.message);
+  }
+}
+
+function appendBubble(role, text) {
+  const msgs = document.getElementById('chat-msgs');
+  const div = document.createElement('div');
+  div.className = `chat-bubble ${role}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeLastBubble() {
+  const msgs = document.getElementById('chat-msgs');
+  if (msgs.lastChild) msgs.removeChild(msgs.lastChild);
+}
+
+async function loadChatLog() {
+  const r = await fetch(`${API}/companion/chat_log`, {cache:'no-store'});
+  const d = await r.json();
+  const body = document.getElementById('log-body');
+  const empty = document.getElementById('log-empty');
+  const log = d.chat_log || [];
+  body.innerHTML = '';
+  if (!log.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  log.forEach(entry => {
+    const tr = document.createElement('tr');
+    const ts = entry.ts ? new Date(entry.ts).toLocaleString('zh-CN', {hour12:false}) : '';
+    const roleClass = entry.role === 'user' ? 'role-user' : 'role-asst';
+    const roleLabel = entry.role === 'user' ? '用户' : '伴侣';
+    tr.innerHTML = `<td>${ts}</td><td class="${roleClass}">${roleLabel}</td><td>${escHtml(entry.content)}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+async function clearChatLog() {
+  if (!confirm('确定清空所有聊天记录？')) return;
+  await fetch(`${API}/companion/chat_log`, {method:'DELETE'});
+  toast('聊天记录已清空');
+  loadChatLog();
+}
+
+async function loadGroupConfig() {
+  const [cfgR, grpR] = await Promise.all([
+    fetch(`${API}/companion/config`, {cache:'no-store'}),
+    fetch(`${API}/push_targets/feishu_groups`, {cache:'no-store'}),
+  ]);
+  const cfgD = await cfgR.json();
+  const grpD = await grpR.json();
+
+  const select = document.getElementById('group-select');
+  select.innerHTML = '<option value="">未设置（不限制）</option>';
+  const groups = grpD.groups || [];
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.chat_id;
+    opt.textContent = g.name;
+    select.appendChild(opt);
+  });
+
+  const currentGroup = cfgD.companion_group || '';
+  select.value = currentGroup;
+
+  const status = document.getElementById('group-status');
+  if (currentGroup) {
+    const name = groups.find(g => g.chat_id === currentGroup)?.name || currentGroup;
+    status.innerHTML = `当前绑定: <strong style="color:var(--pink)">${escHtml(name)}</strong>`;
+  } else {
+    status.textContent = '未绑定专属群';
+  }
+}
+
+async function saveGroup() {
+  const chatId = document.getElementById('group-select').value;
+  await fetch(`${API}/companion/group`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({chat_id: chatId || null}),
+  });
+  toast(chatId ? '调教群已绑定 ✓' : '已取消绑定');
+  loadGroupConfig();
+}
+
+async function clearGroup() {
+  await fetch(`${API}/companion/group`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({chat_id: null}),
+  });
+  toast('已取消绑定');
+  loadGroupConfig();
+}
+
+const WISH_STATUS_LABELS = {pending:'⏳ 待处理', done:'✅ 已实现', rejected:'❌ 不做'};
+const WISH_STATUS_CYCLE = ['pending','done','rejected'];
+
+async function loadWishes() {
+  const r = await fetch(`${API}/companion/wishes`, {cache:'no-store'});
+  const d = await r.json();
+  const list = document.getElementById('wish-list');
+  const empty = document.getElementById('wish-empty');
+  const wishes = d.wishes || [];
+  list.innerHTML = '';
+  if (!wishes.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  wishes.forEach((w, i) => {
+    const div = document.createElement('div');
+    div.className = 'wish-item';
+    const ts = w.ts ? new Date(w.ts).toLocaleString('zh-CN', {hour12:false}) : '';
+    const st = w.status || 'pending';
+    const origHtml = w.original && w.original !== '(手动添加)'
+      ? `<div class="wish-orig">原始消息: "${escHtml(w.original)}"</div>` : '';
+    div.innerHTML = `
+      <div class="wish-desc">
+        <div class="wish-title">${escHtml(w.description)}</div>
+        <div class="wish-meta">${ts}</div>
+        ${origHtml}
+      </div>
+      <button class="wish-badge ${st}" onclick="cycleWishStatus(${i},'${st}')" title="点击切换状态">${WISH_STATUS_LABELS[st]||st}</button>
+      <button class="del" title="删除" onclick="deleteWish(${i})">×</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+async function addWishManual() {
+  const input = document.getElementById('wish-input');
+  const desc = input.value.trim();
+  if (!desc) return;
+  await fetch(`${API}/companion/wishes`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({description: desc}),
+  });
+  input.value = '';
+  toast('许愿已记录 🌟');
+  loadWishes();
+}
+
+async function deleteWish(idx) {
+  await fetch(`${API}/companion/wishes/${idx}`, {method:'DELETE'});
+  toast('许愿已删除');
+  loadWishes();
+}
+
+async function cycleWishStatus(idx, current) {
+  const ci = WISH_STATUS_CYCLE.indexOf(current);
+  const next = WISH_STATUS_CYCLE[(ci+1) % WISH_STATUS_CYCLE.length];
+  await fetch(`${API}/companion/wishes/${idx}/status`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({status: next}),
+  });
+  loadWishes();
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+loadPersona();
+</script>
+</body>
+</html>
