@@ -5,6 +5,7 @@
 |  |  |
 |--|--|
 | **在线文档** | [https://px39n.github.io/Personal_Assistant_CN/](https://px39n.github.io/Personal_Assistant_CN/) |
+| **公网入口（示例部署）** | [http://43.143.114.183:8000](http://43.143.114.183:8000/) — Docker 已映射 `:8000`；详见 [文档 · 上线后访问](docs/deployment.md#server-access) |
 | **运行时** | Python 3.11+，推荐 Docker Compose |
 | **核心框架** | FastAPI · SQLAlchemy/asyncpg · Redis · APScheduler |
 

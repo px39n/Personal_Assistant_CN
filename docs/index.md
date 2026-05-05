@@ -13,7 +13,7 @@
 | **想最快跑起来** | [快速开始](getting-started.md) → `docker compose up` 与 `.env` 必填项 |
 | **要接入飞书 / 企微** | [架构概览](architecture.md) 里「消息路径」→ `app/channels/`、各渠道 API |
 | **要写新 Skill 或改路由** | [架构概览](architecture.md) → `app/engine/router.py`、`app/skills/registry.py` |
-| **要部署到服务器** | [部署与运维](deployment.md) → `scripts/`、Docker、`.deploy.env` |
+| **要部署或找公网入口** | [部署与运维](deployment.md)：已写 **`http://43.143.114.183:8000/`** 等当前实例与各静态页路径；另含 `scripts/`、Docker、`.deploy.env` |
 | **要接行情 / 代理** | [数据层与行情](data-and-apis.md) → `market_data`、`EM_PROXY_URL` |
 | **要维护前端或 Workers** | [前端与边缘代理](frontend-and-proxy.md) → `web/`、`cf-em-proxy/` |
 
